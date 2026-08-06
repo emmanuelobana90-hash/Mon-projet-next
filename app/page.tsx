@@ -1,8 +1,10 @@
-import './globals.css';
-
 'use client';
 
+import './globals.css';
+
 import { useState, useEffect } from 'react';
+// ... tout le reste de ton code continue en dessous sans rien changer
+
 
 // Types locaux pour Yaoundé
 type QuartierYaounde = 'Bastos' | 'Mvan' | 'Mesa' | 'Mokolo' | 'Biyem-Assi' | 'Emana' | 'Nsam';
