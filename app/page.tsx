@@ -1,178 +1,179 @@
 'use client';
 
 import './globals.css';
-
 import { useState, useEffect } from 'react';
-// ... tout le reste de ton code continue en dessous sans rien changer
 
-
-// Types locaux pour Yaoundé
-type QuartierYaounde = 'Bastos' | 'Mvan' | 'Mesa' | 'Mokolo' | 'Biyem-Assi' | 'Emana' | 'Nsam';
+type QuartierYaounde = 'Bastos' | 'Mvan' | 'Mesa' | 'Emana' | 'Nsam' | 'Mokolo' | 'Biyem-Assi';
 type NiveauUrgence = 'FAIBLE' | 'MOYEN' | 'CRITIQUE';
-type StatutSignalement = 'SIGNALE' | 'EN_COURS' | 'NETTOYE';
+type StatutSignature = 'SIGNALÉ' | 'EN_COURS' | 'RÉSOLU';
 
 interface Signalement {
   id: string;
   quartier: QuartierYaounde;
   repere: string;
   urgence: NiveauUrgence;
-  statut: StatutSignalement;
+  statut: StatutSignature;
   date: string;
 }
 
 export default function Home() {
-  // Navigation par onglets
   const [activeTab, setActiveTab] = useState<'signaler' | 'suivi'>('signaler');
   const [signalements, setSignalements] = useState<Signalement[]>([]);
-
-  // États du formulaire
   const [quartier, setQuartier] = useState<QuartierYaounde>('Mokolo');
   const [repere, setRepere] = useState('');
   const [urgence, setUrgence] = useState<NiveauUrgence>('MOYEN');
 
-  // Charger les données fictives au démarrage
   useEffect(() => {
-    const localData = localStorage.getItem('yaounde_propre_db');
-    if (localData) {
-      setSignalements(JSON.parse(localData));
-    } else {
-      // Données de départ pour la démo
-      const demoData: Signalement[] = [
-        { id: '1', quartier: 'Mokolo', repere: 'En face du marché, bac à ordures renversé', urgence: 'CRITIQUE', statut: 'SIGNALE', date: '05/08/2026' },
-        { id: '2', quartier: 'Biyem-Assi', repere: 'Carrefour Acacia, côté boulangerie', urgence: 'MOYEN', statut: 'EN_COURS', date: '04/08/2026' }
-      ];
-      localStorage.setItem('yaounde_propre_db', JSON.stringify(demoData));
-      setSignalements(demoData);
+    const sauv = localStorage.getItem('yaounde_propre_alerts');
+    if (sauv) {
+      setSignalements(JSON.parse(sauv));
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const gérerSoumission = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!repere.trim()) return alert('Précisez un point de repère');
+    if (!repere.trim()) return;
 
-    const nouveau: Signalement = {
-      id: Math.random().toString(36).substring(2, 7).toUpperCase(),
+    const nouvelleAlerte: Signalement = {
+      id: Math.random().toString(36).substring(2, 9),
       quartier,
       repere,
       urgence,
-      statut: 'SIGNALE',
-      date: new Date().toLocaleDateString('fr-FR')
+      statut: 'SIGNALÉ',
+      date: new Date().toLocaleDateString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     };
 
-    const MAJList = [nouveau, ...signalements];
-    setSignalements(MAJList);
-    localStorage.setItem('yaounde_propre_db', JSON.stringify(MAJList));
-    
+    const majListe = [nouvelleAlerte, ...signalements];
+    setSignalements(majListe);
+    localStorage.setItem('yaounde_propre_alerts', JSON.stringify(majListe));
     setRepere('');
-    setActiveTab('suivi'); // Bascule directement sur le flux public pour voir le résultat !
+    setUrgence('MOYEN');
+    setActiveTab('suivi');
   };
 
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100 pb-8">
-      {/* Entête */}
-      <header className="bg-emerald-600 p-4 text-center sticky top-0 shadow-md z-10">
-        <h1 className="text-xl font-black tracking-tight text-white">🇨🇲 YAOUNDÉ PROPRE</h1>
-        <p className="text-[10px] text-emerald-100 font-medium tracking-wide uppercase">MVP Citoyen Propre</p>
+    <main className="min-h-screen bg-slate-50 text-slate-900 pb-12">
+      <header className="bg-emerald-600 text-white shadow-md text-center py-6 px-4 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-emerald-500 via-red-500 to-yellow-400" />
+        <h1 className="text-2xl font-black tracking-wider flex items-center justify-center gap-2">
+          <span>🇨🇲</span> YAOUNDÉ PROPRE
+        </h1>
+        <p className="text-xs text-emerald-100 font-medium mt-1 uppercase tracking-widest">
+          Plateforme Citoyenne Locale • Esquisse MVP
+        </p>
       </header>
 
-      {/* Système d'onglets pour ton contact */}
-      <nav className="flex bg-slate-800 border-b border-slate-700 sticky top-[60px] z-10">
-        <button 
-          onClick={() => setActiveTab('signaler')}
-          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center ${activeTab === 'signaler' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50' : 'text-slate-400'}`}
-        >
-          📢 Signaler un dépôt
-        </button>
-        <button 
-          onClick={() => setActiveTab('suivi')}
-          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center ${activeTab === 'suivi' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50' : 'text-slate-400'}`}
-        >
-          📋 Suivi Public ({signalements.length})
-        </button>
-      </nav>
+      <div className="max-w-md mx-auto mt-4 px-3">
+        <div className="grid grid-cols-2 gap-2 bg-slate-200 p-1 rounded-xl shadow-inner mb-6">
+          <button
+            onClick={() => setActiveTab('signaler')}
+            className={`py-3 text-xs font-bold uppercase rounded-lg transition-all ${
+              activeTab === 'signaler' ? 'bg-white text-emerald-700 shadow-md' : 'text-slate-600'
+            }`}
+          >
+            📢 Signaler une zone
+          </button>
+          <button
+            onClick={() => setActiveTab('suivi')}
+            className={`py-3 text-xs font-bold uppercase rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              activeTab === 'suivi' ? 'bg-white text-emerald-700 shadow-md' : 'text-slate-600'
+            }`}
+          >
+            📋 Flux de Suivi
+          </button>
+        </div>
 
-      <section className="max-w-md mx-auto p-4">
-        {/* ONGLET 1 : FORMULAIRE CITOYEN */}
         {activeTab === 'signaler' && (
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-xl">
-            <h2 className="text-base font-bold text-white mb-4">Alerte Anonyme Rapide</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+            <form onSubmit={gérerSoumission} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Choisir le Quartier</label>
-                <select 
-                  value={quartier} 
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Sélectionner le Quartier
+                </label>
+                <select
+                  value={quartier}
                   onChange={(e) => setQuartier(e.target.value as QuartierYaounde)}
-                  className="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none"
                 >
-                  {['Mokolo', 'Biyem-Assi', 'Bastos', 'Mvan', 'Mesa', 'Emana', 'Nsam'].map(q => (
-                    <option key={q} value={q}>{q}</option>
-                  ))}
+                  <option value="Mokolo">Mokolo (Marché)</option>
+                  <option value="Biyem-Assi">Biyem-Assi</option>
+                  <option value="Bastos">Bastos</option>
+                  <option value="Mvan">Mvan (Gare routière)</option>
+                  <option value="Mesa">La Mesa</option>
+                  <option value="Emana">Emana</option>
+                  <option value="Nsam">Nsam</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Point de repère textuel</label>
-                <textarea 
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  Point de repère précis
+                </label>
+                <textarea
                   value={repere}
                   onChange={(e) => setRepere(e.target.value)}
-                  placeholder="Ex: Juste derrière la station service, à côté de la boutique orange..."
+                  placeholder="Ex: Face boulangerie, tas d'ordures bloquant le caniveau..."
                   rows={3}
-                  className="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  required
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Niveau de gravité</label>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Niveau de gravité constaté
+                </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map(level => {
-                    const activeStyle = urgence === level ? 'ring-2 ring-emerald-400 border-transparent bg-slate-600 text-white' : 'opacity-50 bg-slate-700 text-slate-300';
-                    return (
-                      <button 
-                        key={level} type="button" onClick={() => setUrgence(level)}
-                        className={`p-2.5 text-[10px] font-extrabold rounded-lg border border-slate-600 transition-all ${activeStyle}`}
-                      >
-                        {level === 'FAIBLE' ? '🟢 ' : level === 'MOYEN' ? '🟡 ' : '🔴 '} {level}
-                      </button>
-                    );
-                  })}
+                  {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map((niv) => (
+                    <button
+                      key={niv}
+                      type="button"
+                      onClick={() => setUrgence(niv)}
+                      className={`py-2 text-[10px] font-black rounded-xl border text-center transition-all ${
+                        urgence === niv ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-700'
+                      }`}
+                    >
+                      {niv}
+                    </button>
+                    ))}
                 </div>
               </div>
 
-              <button type="submit" className="w-full bg-emerald-500 text-slate-950 p-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-transform pt-3">
+              <button
+                type="submit"
+                className="w-full bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider py-3.5 rounded-xl shadow-md transition-all mt-2"
+              >
                 🚀 Envoyer le signalement
               </button>
             </form>
           </div>
         )}
 
-        {/* ONGLET 2 : SUIVI PUBLIC */}
         {activeTab === 'suivi' && (
           <div className="space-y-3">
-            <h2 className="text-sm font-bold text-slate-400 px-1 uppercase tracking-wide">Flux des alertes de la ville</h2>
-            {signalements.map(item => (
-              <div key={item.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md space-y-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-bold text-emerald-400 tracking-wider">#{item.id}</span>
-                    <h3 className="font-extrabold text-base text-white">{item.quartier}</h3>
-                  </div>
-                  <span className={`text-[10px] px-2.5 py-1 rounded-full font-black uppercase ${
-                    item.statut === 'SIGNALE' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  }`}>
-                    {item.statut === 'SIGNALE' ? '🔴 Signalé' : '🟡 En cours'}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-300 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 leading-relaxed">{item.repere}</p>
-                <div className="flex justify-between items-center text-[10px] font-bold tracking-wide text-slate-500">
-                  <span>URGENCE : <strong className={item.urgence === 'CRITIQUE' ? 'text-rose-400' : item.urgence === 'MOYEN' ? 'text-amber-400' : 'text-green-400'}>{item.urgence}</strong></span>
-                  <span>{item.date}</span>
-                </div>
+            {signalements.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 border border-slate-100 text-center">
+                <p className="text-xs text-slate-500 font-medium">Aucun problème signalé pour le moment.</p>
               </div>
-            ))}
+            ) : (
+              signalements.map((item) => (
+                <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-800">📍 {item.quartier}</span>
+                    <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-full bg-red-100 text-red-800">
+                      {item.urgence}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl">{item.repere}</p>
+                </div>
+              ))
+            )}
           </div>
         )}
-      </section>
+      </div>
     </main>
   );
-                                                                                           }
-            
+}
