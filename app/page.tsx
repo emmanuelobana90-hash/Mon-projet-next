@@ -1,5 +1,6 @@
 'use client';
 
+import './globals.css';
 import { useState, useEffect } from 'react';
 
 // Types locaux pour Yaoundé
@@ -16,158 +17,225 @@ interface Signalement {
   date: string;
 }
 
-export default function Home() {
-  // Navigation par onglets
-  const [activeTab, setActiveTab] = useState<'signaler' | 'suivi'>('signaler');
-  const [signalements, setSignalements] = useState<Signalement[]>([]);
+const QUARTIERS: QuartierYaounde[] = ['Bastos', 'Mvan', 'Mesa', 'Mokolo', 'Biyem-Assi', 'Emana', 'Nsam'];
 
-  // États du formulaire
+const STATUT_CONFIG: Record<StatutSignalement, { label: string; color: string; icon: string }> = {
+  SIGNALE: { label: 'Signalé', color: '#ef4444', icon: '🔴' },
+  EN_COURS: { label: 'En cours', color: '#f59e0b', icon: '🟡' },
+  NETTOYE: { label: 'Nettoyé', color: '#22c55e', icon: '🟢' },
+};
+
+const URGENCE_COLOR: Record<NiveauUrgence, string> = {
+  FAIBLE: '#22c55e',
+  MOYEN: '#f59e0b',
+  CRITIQUE: '#ef4444',
+};
+
+export default function Home() {
+  const [activeTab, setActiveTab] = useState<'signaler' | 'suivi' | 'carte' | 'impact'>('signaler');
+  const [signalements, setSignalements] = useState<Signalement[]>([
+    { id: '1', quartier: 'Mokolo', repere: "Derrière le marché", urgence: 'CRITIQUE', statut: 'SIGNALE', date: '2026-08-04' },
+    { id: '2', quartier: 'Bastos', repere: "Près de la pharmacie", urgence: 'MOYEN', statut: 'EN_COURS', date: '2026-08-03' },
+  ]);
+
   const [quartier, setQuartier] = useState<QuartierYaounde>('Mokolo');
   const [repere, setRepere] = useState('');
   const [urgence, setUrgence] = useState<NiveauUrgence>('MOYEN');
 
-  // Charger les données fictives au démarrage
-  useEffect(() => {
-    const localData = localStorage.getItem('yaounde_propre_db');
-    if (localData) {
-      setSignalements(JSON.parse(localData));
-    } else {
-      // Données de départ pour la démo
-      const demoData: Signalement[] = [
-        { id: '1', quartier: 'Mokolo', repere: 'En face du marché, bac à ordures renversé', urgence: 'CRITIQUE', statut: 'SIGNALE', date: '05/08/2026' },
-        { id: '2', quartier: 'Biyem-Assi', repere: 'Carrefour Acacia, côté boulangerie', urgence: 'MOYEN', statut: 'EN_COURS', date: '04/08/2026' }
-      ];
-      localStorage.setItem('yaounde_propre_db', JSON.stringify(demoData));
-      setSignalements(demoData);
-    }
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!repere.trim()) return alert('Précisez un point de repère');
-
+  function handleSubmit() {
     const nouveau: Signalement = {
-      id: Math.random().toString(36).substring(2, 7).toUpperCase(),
+      id: Date.now().toString(),
       quartier,
-      repere,
+      repere: repere || 'Non précisé',
       urgence,
       statut: 'SIGNALE',
-      date: new Date().toLocaleDateString('fr-FR')
+      date: new Date().toISOString().split('T')[0],
     };
-
-    const MAJList = [nouveau, ...signalements];
-    setSignalements(MAJList);
-    localStorage.setItem('yaounde_propre_db', JSON.stringify(MAJList));
-    
+    setSignalements([nouveau, ...signalements]);
     setRepere('');
-    setActiveTab('suivi'); // Bascule directement sur le flux public pour voir le résultat !
-  };
+    setActiveTab('suivi');
+  }
+
+  const compteParQuartier = QUARTIERS.map((q) => ({
+    quartier: q,
+    count: signalements.filter((s) => s.quartier === q).length,
+    critique: signalements.some((s) => s.quartier === q && s.urgence === 'CRITIQUE' && s.statut !== 'NETTOYE'),
+  }));
 
   return (
-    <main className="min-h-screen bg-slate-900 text-slate-100 pb-8">
-      {/* Entête */}
-      <header className="bg-emerald-600 p-4 text-center sticky top-0 shadow-md z-10">
-        <h1 className="text-xl font-black tracking-tight text-white">🇨🇲 YAOUNDÉ PROPRE</h1>
-        <p className="text-[10px] text-emerald-100 font-medium tracking-wide uppercase">MVP Citoyen Propre</p>
+    <div style={{ minHeight: '100vh', background: '#0f172a', color: '#f1f5f9', fontFamily: 'system-ui, sans-serif' }}>
+      <header style={{ background: 'linear-gradient(135deg, #059669, #10b981)', padding: '24px 20px', textAlign: 'center' }}>
+        <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: 1 }}>🇨🇲 YAOUNDÉ PROPRE</div>
+        <div style={{ fontSize: 13, opacity: 0.9, marginTop: 4 }}>Plateforme citoyenne de signalement des dépôts sauvages</div>
       </header>
 
-      {/* Système d'onglets pour ton contact */}
-      <nav className="flex bg-slate-800 border-b border-slate-700 sticky top-[60px] z-10">
-        <button 
-          onClick={() => setActiveTab('signaler')}
-          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center ${activeTab === 'signaler' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50' : 'text-slate-400'}`}
-        >
-          📢 Signaler un dépôt
-        </button>
-        <button 
-          onClick={() => setActiveTab('suivi')}
-          className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider text-center ${activeTab === 'suivi' ? 'text-emerald-400 border-b-2 border-emerald-400 bg-slate-800/50' : 'text-slate-400'}`}
-        >
-          📋 Suivi Public ({signalements.length})
-        </button>
+      <nav style={{ display: 'flex', borderBottom: '1px solid #1e293b', overflowX: 'auto' }}>
+        {[
+          { key: 'signaler', label: '📢 Signaler' },
+          { key: 'suivi', label: `📋 Suivi (${signalements.length})` },
+          { key: 'carte', label: '🗺️ Carte' },
+          { key: 'impact', label: '📊 Impact' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as any)}
+            style={{
+              flex: '1 0 auto',
+              padding: '14px 12px',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === tab.key ? '3px solid #10b981' : '3px solid transparent',
+              color: activeTab === tab.key ? '#10b981' : '#94a3b8',
+              fontWeight: 700,
+              fontSize: 13,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
       </nav>
 
-      <section className="max-w-md mx-auto p-4">
-        {/* ONGLET 1 : FORMULAIRE CITOYEN */}
+      <main style={{ padding: 20, maxWidth: 480, margin: '0 auto' }}>
         {activeTab === 'signaler' && (
-          <div className="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-xl">
-            <h2 className="text-base font-bold text-white mb-4">Alerte Anonyme Rapide</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Choisir le Quartier</label>
-                <select 
-                  value={quartier} 
-                  onChange={(e) => setQuartier(e.target.value as QuartierYaounde)}
-                  className="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          <div style={{ background: '#1e293b', borderRadius: 16, padding: 20 }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 20 }}>Alerte Anonyme Rapide</h2>
+
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>CHOISIR LE QUARTIER</label>
+            <select
+              value={quartier}
+              onChange={(e) => setQuartier(e.target.value as QuartierYaounde)}
+              style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15 }}
+            >
+              {QUARTIERS.map((q) => (
+                <option key={q} value={q}>{q}</option>
+              ))}
+            </select>
+
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>POINT DE REPÈRE TEXTUEL</label>
+            <textarea
+              value={repere}
+              onChange={(e) => setRepere(e.target.value)}
+              placeholder="Ex: Juste derrière la station service, à côté de la boutique orange..."
+              rows={3}
+              style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15, resize: 'vertical' }}
+            />
+
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>NIVEAU DE GRAVITÉ</label>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8, marginBottom: 24 }}>
+              {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map((u) => (
+                <button
+                  key={u}
+                  onClick={() => setUrgence(u)}
+                  style={{
+                    flex: 1,
+                    padding: 12,
+                    borderRadius: 10,
+                    border: urgence === u ? `2px solid ${URGENCE_COLOR[u]}` : '2px solid #334155',
+                    background: urgence === u ? `${URGENCE_COLOR[u]}22` : '#334155',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
                 >
-                  {['Mokolo', 'Biyem-Assi', 'Bastos', 'Mvan', 'Mesa', 'Emana', 'Nsam'].map(q => (
-                    <option key={q} value={q}>{q}</option>
-                  ))}
-                </select>
-              </div>
+                  ● {u}
+                </button>
+              ))}
+            </div>
 
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Point de repère textuel</label>
-                <textarea 
-                  value={repere}
-                  onChange={(e) => setRepere(e.target.value)}
-                  placeholder="Ex: Juste derrière la station service, à côté de la boutique orange..."
-                  rows={3}
-                  className="w-full p-3 bg-slate-700 border border-slate-600 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Niveau de gravité</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map(level => {
-                    const activeStyle = urgence === level ? 'ring-2 ring-emerald-400 border-transparent bg-slate-600 text-white' : 'opacity-50 bg-slate-700 text-slate-300';
-                    return (
-                      <button 
-                        key={level} type="button" onClick={() => setUrgence(level)}
-                        className={`p-2.5 text-[10px] font-extrabold rounded-lg border border-slate-600 transition-all ${activeStyle}`}
-                      >
-                        {level === 'FAIBLE' ? '🟢 ' : level === 'MOYEN' ? '🟡 ' : '🔴 '} {level}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <button type="submit" className="w-full bg-emerald-500 text-slate-950 p-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg active:scale-95 transition-transform pt-3">
-                🚀 Envoyer le signalement
-              </button>
-            </form>
+            <button
+              onClick={handleSubmit}
+              style={{ width: '100%', padding: 16, background: '#10b981', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15 }}
+            >
+              🚀 ENVOYER LE SIGNALEMENT
+            </button>
           </div>
         )}
 
-        {/* ONGLET 2 : SUIVI PUBLIC */}
         {activeTab === 'suivi' && (
-          <div className="space-y-3">
-            <h2 className="text-sm font-bold text-slate-400 px-1 uppercase tracking-wide">Flux des alertes de la ville</h2>
-            {signalements.map(item => (
-              <div key={item.id} className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md space-y-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className="text-[10px] font-bold text-emerald-400 tracking-wider">#{item.id}</span>
-                    <h3 className="font-extrabold text-base text-white">{item.quartier}</h3>
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Suivi Public</h2>
+            {signalements.length === 0 && <p style={{ color: '#94a3b8' }}>Aucun signalement pour l'instant.</p>}
+            {signalements.map((s) => {
+              const cfg = STATUT_CONFIG[s.statut];
+              return (
+                <div key={s.id} style={{ background: '#1e293b', borderRadius: 14, padding: 16, marginBottom: 12, borderLeft: `4px solid ${URGENCE_COLOR[s.urgence]}` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 800, fontSize: 15 }}>{s.quartier}</span>
+                    <span style={{ background: cfg.color + '22', color: cfg.color, padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700 }}>
+                      {cfg.icon} {cfg.label}
+                    </span>
                   </div>
-                  <span className={`text-[10px] px-2.5 py-1 rounded-full font-black uppercase ${
-                    item.statut === 'SIGNALE' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  }`}>
-                    {item.statut === 'SIGNALE' ? '🔴 Signalé' : '🟡 En cours'}
-                  </span>
+                  <div style={{ color: '#94a3b8', fontSize: 13, marginTop: 6 }}>{s.repere}</div>
+                  <div style={{ color: '#64748b', fontSize: 11, marginTop: 8 }}>{s.date} · Gravité: {s.urgence}</div>
                 </div>
-                <p className="text-xs text-slate-300 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50 leading-relaxed">{item.repere}</p>
-                <div className="flex justify-between items-center text-[10px] font-bold tracking-wide text-slate-500">
-                  <span>URGENCE : <strong className={item.urgence === 'CRITIQUE' ? 'text-rose-400' : item.urgence === 'MOYEN' ? 'text-amber-400' : 'text-green-400'}>{item.urgence}</strong></span>
-                  <span>{item.date}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
-      </section>
-    </main>
+
+        {activeTab === 'carte' && (
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Zones concernées</h2>
+            <p style={{ color: '#94a3b8', fontSize: 13, marginBottom: 20 }}>Vue par quartier — la couleur indique la densité de signalements actifs.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {compteParQuartier.map((z) => (
+                <div
+                  key={z.quartier}
+                  style={{
+                    background: z.critique ? '#7f1d1d' : z.count > 0 ? '#78350f' : '#1e293b',
+                    borderRadius: 14,
+                    padding: 16,
+                    textAlign: 'center',
+                    border: z.critique ? '2px solid #ef4444' : 'none',
+                  }}
+                >
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{z.quartier}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, marginTop: 6 }}>{z.count}</div>
+                  <div style={{ fontSize: 10, color: '#cbd5e1' }}>signalement{z.count !== 1 ? 's' : ''}</div>
+                </div>
+              ))}
+            </div>
+            <p style={{ color: '#64748b', fontSize: 11, marginTop: 16, fontStyle: 'italic' }}>
+              Note : une carte géolocalisée interactive (avec GPS précis) est prévue pour la version suivante.
+            </p>
+          </div>
+        )}
+
+        {activeTab === 'impact' && (
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Pourquoi ce projet compte</h2>
+
+            <div style={{ display: 'grid', gap: 12, marginBottom: 20 }}>
+              {[
+                { chiffre: '100%', label: 'Signalement anonyme et gratuit pour tous les citoyens' },
+                { chiffre: '24/7', label: 'Disponible en continu, accessible depuis n\'importe quel smartphone' },
+                { chiffre: '0 F', label: "Aucun coût d'infrastructure lourde pour démarrer" },
+              ].map((item, i) => (
+                <div key={i} style={{ background: '#1e293b', borderRadius: 14, padding: 16, display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: '#10b981', minWidth: 60 }}>{item.chiffre}</div>
+                  <div style={{ fontSize: 13, color: '#cbd5e1' }}>{item.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ background: '#1e293b', borderRadius: 14, padding: 18 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, marginBottom: 10 }}>Bénéfices attendus pour la ville</h3>
+              <ul style={{ margin: 0, paddingLeft: 18, color: '#cbd5e1', fontSize: 13, lineHeight: 1.9 }}>
+                <li>Détection plus rapide des points noirs d'insalubrité</li>
+                <li>Meilleure priorisation des interventions municipales</li>
+                <li>Réduction des risques sanitaires (paludisme, choléra) liés aux dépôts sauvages</li>
+                <li>Renforcement de la participation citoyenne à la propreté urbaine</li>
+                <li>Image modernisée de la mairie auprès des habitants</li>
+              </ul>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <footer style={{ textAlign: 'center', padding: 24, color: '#475569', fontSize: 11 }}>
+        Yaoundé Propre — MVP Citoyen Propre
+      </footer>
+    </div>
   );
 }
