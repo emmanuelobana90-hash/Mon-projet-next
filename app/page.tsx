@@ -97,61 +97,86 @@ export default function Home() {
       </nav>
 
       <main style={{ padding: 20, maxWidth: 480, margin: '0 auto' }}>
+        {/* ONGLET SIGNALER */}
         {activeTab === 'signaler' && (
-          <div style={{ background: '#1e293b', borderRadius: 16, padding: 20 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 20 }}>Alerte Anonyme Rapide</h2>
-
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>CHOISIR LE QUARTIER</label>
-            <select
-              value={quartier}
-              onChange={(e) => setQuartier(e.target.value as QuartierYaounde)}
-              style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15 }}
-            >
-              {QUARTIERS.map((q) => (
-                <option key={q} value={q}>{q}</option>
-              ))}
-            </select>
-
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>POINT DE REPÈRE TEXTUEL</label>
-            <textarea
-              value={repere}
-              onChange={(e) => setRepere(e.target.value)}
-              placeholder="Ex: Juste derrière la station service, à côté de la boutique orange..."
-              rows={3}
-              style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15, resize: 'vertical' }}
-            />
-
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>NIVEAU DE GRAVITÉ</label>
-            <div style={{ display: 'flex', gap: 8, marginTop: 8, marginBottom: 24 }}>
-              {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map((u) => (
-                <button
-                  key={u}
-                  onClick={() => setUrgence(u)}
-                  style={{
-                    flex: 1,
-                    padding: 12,
-                    borderRadius: 10,
-                    border: urgence === u ? `2px solid ${URGENCE_COLOR[u]}` : '2px solid #334155',
-                    background: urgence === u ? `${URGENCE_COLOR[u]}22` : '#334155',
-                    color: '#fff',
-                    fontWeight: 700,
-                    fontSize: 12,
-                  }}
-                >
-                  ● {u}
-                </button>
-              ))}
+          <div>
+            <div style={{ marginBottom: 20 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 14, textAlign: 'center' }}>Comment ça marche ?</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                  <div style={{ fontSize: 22 }}>📍</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>1. Localisez</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Indiquez le quartier et un repère</div>
+                </div>
+                <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                  <div style={{ fontSize: 22 }}>📢</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>2. Signalez</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Envoyez l'alerte en un clic</div>
+                </div>
+                <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
+                  <div style={{ fontSize: 22 }}>✅</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>3. Suivez</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>La mairie traite et met à jour le statut</div>
+                </div>
+              </div>
             </div>
 
-            <button
-              onClick={handleSubmit}
-              style={{ width: '100%', padding: 16, background: '#10b981', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15 }}
-            >
-              🚀 ENVOYER LE SIGNALEMENT
-            </button>
+            <div style={{ background: '#1e293b', borderRadius: 16, padding: 20 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 20 }}>Alerte Anonyme Rapide</h2>
+
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>CHOISIR LE QUARTIER</label>
+              <select
+                value={quartier}
+                onChange={(e) => setQuartier(e.target.value as QuartierYaounde)}
+                style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15 }}
+              >
+                {QUARTIERS.map((q) => (
+                  <option key={q} value={q}>{q}</option>
+                ))}
+              </select>
+
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>POINT DE REPÈRE TEXTUEL</label>
+              <textarea
+                value={repere}
+                onChange={(e) => setRepere(e.target.value)}
+                placeholder="Ex: Juste derrière la station service, à côté de la boutique orange..."
+                rows={3}
+                style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15, resize: 'vertical' }}
+              />
+
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>NIVEAU DE GRAVITÉ</label>
+              <div style={{ display: 'flex', gap: 8, marginTop: 8, marginBottom: 24 }}>
+                {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map((u) => (
+                  <button
+                    key={u}
+                    onClick={() => setUrgence(u)}
+                    style={{
+                      flex: 1,
+                      padding: 12,
+                      borderRadius: 10,
+                      border: urgence === u ? `2px solid ${URGENCE_COLOR[u]}` : '2px solid #334155',
+                      background: urgence === u ? `${URGENCE_COLOR[u]}22` : '#334155',
+                      color: '#fff',
+                      fontWeight: 700,
+                      fontSize: 12,
+                    }}
+                  >
+                    ● {u}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleSubmit}
+                style={{ width: '100%', padding: 16, background: '#10b981', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15 }}
+              >
+                🚀 ENVOYER LE SIGNALEMENT
+              </button>
+            </div>
           </div>
         )}
 
+        {/* ONGLET SUIVI */}
         {activeTab === 'suivi' && (
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Suivi Public</h2>
@@ -174,6 +199,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* ONGLET CARTE */}
         {activeTab === 'carte' && (
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Zones concernées</h2>
@@ -202,6 +228,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* ONGLET IMPACT */}
         {activeTab === 'impact' && (
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 16 }}>Pourquoi ce projet compte</h2>
