@@ -260,8 +260,24 @@ export default function Home() {
         )}
       </main>
 
-      <footer style={{ textAlign: 'center', padding: 24, color: '#475569', fontSize: 11 }}>
-        Yaoundé Propre — MVP Citoyen Propre
+      <footer style={{ padding: '32px 20px 24px', borderTop: '1px solid #1e293b', marginTop: 20 }}>
+        <div style={{ maxWidth: 480, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', fontWeight: 800, fontSize: 16, marginBottom: 6 }}>🇨🇲 Yaoundé Propre</div>
+          <div style={{ textAlign: 'center', fontSize: 12, color: '#64748b', marginBottom: 20 }}>MVP Citoyen Propre — Initiative citoyenne</div>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+            <a href="mailto:yaoundepropre@gmail.com" style={{ color: '#94a3b8', fontSize: 12, textDecoration: 'none', background: '#1e293b', padding: '8px 14px', borderRadius: 20 }}>
+              ✉️ Contact
+            </a>
+            <a href="https://www.facebook.com/share/19DGSnnDUo/" style={{ color: '#94a3b8', fontSize: 12, textDecoration: 'none', background: '#1e293b', padding: '8px 14px', borderRadius: 20 }}>
+              📘 Facebook
+            </a>
+          </div>
+
+          <div style={{ textAlign: 'center', fontSize: 10, color: '#475569' }}>
+            © 2026 Yaoundé Propre — Fait avec 💚 pour une ville plus propre
+          </div>
+        </div>
       </footer>
     </div>
   );
