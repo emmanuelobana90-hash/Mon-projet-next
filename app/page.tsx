@@ -31,6 +31,9 @@ const URGENCE_COLOR: Record<NiveauUrgence, string> = {
   CRITIQUE: '#ef4444',
 };
 
+// ⚠️ Remplace par ton numéro WhatsApp (format international, sans le +, ex: 237699000000)
+const WHATSAPP_NUMBER = '689049440';
+
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'signaler' | 'suivi' | 'carte' | 'impact'>('signaler');
   const [signalements, setSignalements] = useState<Signalement[]>([
@@ -43,15 +46,22 @@ export default function Home() {
   const [urgence, setUrgence] = useState<NiveauUrgence>('MOYEN');
 
   function handleSubmit() {
+    const dateDuJour = new Date().toISOString().split('T')[0];
+
     const nouveau: Signalement = {
       id: Date.now().toString(),
       quartier,
       repere: repere || 'Non précisé',
       urgence,
       statut: 'SIGNALE',
-      date: new Date().toISOString().split('T')[0],
+      date: dateDuJour,
     };
     setSignalements([nouveau, ...signalements]);
+
+    // Envoi du signalement vers WhatsApp
+    const message = `🚨 NOUVEAU SIGNALEMENT - Yaoundé Propre%0A%0AQuartier: ${quartier}%0ARepère: ${repere || 'Non précisé'}%0AGravité: ${urgence}%0ADate: ${dateDuJour}`;
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+
     setRepere('');
     setActiveTab('suivi');
   }
@@ -111,7 +121,7 @@ export default function Home() {
                 <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
                   <div style={{ fontSize: 22 }}>📢</div>
                   <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>2. Signalez</div>
-                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Envoyez l'alerte en un clic</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Envoyez l'alerte via WhatsApp</div>
                 </div>
                 <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
                   <div style={{ fontSize: 22 }}>✅</div>
@@ -168,9 +178,9 @@ export default function Home() {
 
               <button
                 onClick={handleSubmit}
-                style={{ width: '100%', padding: 16, background: '#10b981', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15 }}
+                style={{ width: '100%', padding: 16, background: '#25D366', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
-                🚀 ENVOYER LE SIGNALEMENT
+                💬 ENVOYER SUR WHATSAPP
               </button>
             </div>
           </div>
