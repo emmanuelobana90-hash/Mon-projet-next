@@ -295,27 +295,45 @@ export default function Home() {
         {activeTab === 'carte' && (
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>Zones concernées</h2>
-            <p style={{ color: '#94a3b8', fontSize: 13, marginBottom: 20 }}>Vue par quartier — la couleur indique la densité de signalements actifs.</p>
+            <p style={{ color: '#94a3b8', fontSize: 13, marginBottom: 16 }}>Vue par quartier — la couleur indique la densité de signalements actifs.</p>
+
+            <div style={{ borderRadius: 14, overflow: 'hidden', marginBottom: 20 }}>
+              <iframe
+                src="https://maps.google.com/maps?q=Yaound%C3%A9,%20Cameroun&z=12&output=embed"
+                width="100%"
+                height="260"
+                style={{ border: 0, display: 'block' }}
+                loading="lazy"
+              />
+            </div>
+
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               {compteParQuartier.map((z) => (
-                <div
+                <a
                   key={z.quartier}
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(z.quartier + ', Yaoundé, Cameroun')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   style={{
                     background: z.critique ? '#7f1d1d' : z.count > 0 ? '#78350f' : '#1e293b',
                     borderRadius: 14,
                     padding: 16,
                     textAlign: 'center',
                     border: z.critique ? '2px solid #ef4444' : 'none',
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    display: 'block',
                   }}
                 >
                   <div style={{ fontWeight: 800, fontSize: 14 }}>{z.quartier}</div>
                   <div style={{ fontSize: 24, fontWeight: 900, marginTop: 6 }}>{z.count}</div>
                   <div style={{ fontSize: 10, color: '#cbd5e1' }}>signalement{z.count !== 1 ? 's' : ''}</div>
-                </div>
+                  <div style={{ fontSize: 9, color: '#94a3b8', marginTop: 4 }}>📍 Voir sur la carte</div>
+                </a>
               ))}
             </div>
             <p style={{ color: '#64748b', fontSize: 11, marginTop: 16, fontStyle: 'italic' }}>
-              Note : une carte géolocalisée interactive (avec GPS précis) est prévue pour la version suivante.
+              Note : cliquez sur un quartier pour l'ouvrir dans Google Maps. Un affichage précis des points de signalement (GPS) est prévu pour la version suivante.
             </p>
           </div>
         )}
