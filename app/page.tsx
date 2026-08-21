@@ -31,8 +31,8 @@ const URGENCE_COLOR: Record<NiveauUrgence, string> = {
   CRITIQUE: '#ef4444',
 };
 
-// ⚠️ Remplace par ton numéro WhatsApp (format international, sans le +, ex: 237699000000)
-const WHATSAPP_NUMBER = '689049440';
+// Numéro WhatsApp pour recevoir les signalements (format international, sans le +)
+const WHATSAPP_NUMBER = '237689049440';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'signaler' | 'suivi' | 'carte' | 'impact'>('signaler');
@@ -44,8 +44,23 @@ export default function Home() {
   const [quartier, setQuartier] = useState<QuartierYaounde>('Mokolo');
   const [repere, setRepere] = useState('');
   const [urgence, setUrgence] = useState<NiveauUrgence>('MOYEN');
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
 
-  function handleSubmit() {
+  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhoto(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
+  function retirerPhoto() {
+    setPhoto(null);
+    setPhotoPreview(null);
+  }
+
+  async function handleSubmit() {
     const dateDuJour = new Date().toISOString().split('T')[0];
 
     const nouveau: Signalement = {
@@ -58,11 +73,32 @@ export default function Home() {
     };
     setSignalements([nouveau, ...signalements]);
 
-    // Envoi du signalement vers WhatsApp
-    const message = `🚨 NOUVEAU SIGNALEMENT - Yaoundé Propre%0A%0AQuartier: ${quartier}%0ARepère: ${repere || 'Non précisé'}%0AGravité: ${urgence}%0ADate: ${dateDuJour}`;
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+    const texteMessage = `🚨 NOUVEAU SIGNALEMENT - Yaoundé Propre\n\nQuartier: ${quartier}\nRepère: ${repere || 'Non précisé'}\nGravité: ${urgence}\nDate: ${dateDuJour}`;
 
+    setEnvoiEnCours(true);
+
+    // Si une photo est jointe et que le partage natif est disponible, on partage photo + texte ensemble
+    if (photo && navigator.share && navigator.canShare && navigator.canShare({ files: [photo] })) {
+      try {
+        await navigator.share({
+          text: texteMessage,
+          files: [photo],
+        });
+      } catch (err) {
+        // L'utilisateur a peut-être annulé le partage, pas grave
+      }
+    } else {
+      // Pas de photo, ou partage de fichier non supporté : on ouvre WhatsApp avec le texte seul
+      const messageEncode = encodeURIComponent(texteMessage);
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${messageEncode}`, '_blank');
+      if (photo) {
+        alert("Ton navigateur ne permet pas d'envoyer la photo automatiquement. WhatsApp va s'ouvrir avec le texte : pense à joindre ta photo manuellement dans la conversation.");
+      }
+    }
+
+    setEnvoiEnCours(false);
     setRepere('');
+    retirerPhoto();
     setActiveTab('suivi');
   }
 
@@ -119,14 +155,14 @@ export default function Home() {
                   <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Indiquez le quartier et un repère</div>
                 </div>
                 <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                  <div style={{ fontSize: 22 }}>📢</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>2. Signalez</div>
-                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Envoyez l'alerte via WhatsApp</div>
+                  <div style={{ fontSize: 22 }}>📸</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>2. Photographiez</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Ajoutez une photo (optionnel)</div>
                 </div>
                 <div style={{ background: '#1e293b', borderRadius: 12, padding: 12, textAlign: 'center' }}>
-                  <div style={{ fontSize: 22 }}>✅</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>3. Suivez</div>
-                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>La mairie traite et met à jour le statut</div>
+                  <div style={{ fontSize: 22 }}>💬</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, marginTop: 6 }}>3. Envoyez</div>
+                  <div style={{ fontSize: 10, color: '#94a3b8', marginTop: 4 }}>Direct sur WhatsApp</div>
                 </div>
               </div>
             </div>
@@ -154,6 +190,47 @@ export default function Home() {
                 style={{ width: '100%', padding: 14, marginTop: 8, marginBottom: 20, background: '#334155', border: 'none', borderRadius: 10, color: '#fff', fontSize: 15, resize: 'vertical' }}
               />
 
+              <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>PHOTO (OPTIONNEL)</label>
+              {!photoPreview ? (
+                <label
+                  htmlFor="photo-input"
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    width: '100%', padding: 16, marginTop: 8, marginBottom: 20,
+                    background: '#334155', border: '2px dashed #475569', borderRadius: 10,
+                    color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  }}
+                >
+                  📷 Prendre ou choisir une photo
+                  <input
+                    id="photo-input"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handlePhotoChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              ) : (
+                <div style={{ position: 'relative', marginTop: 8, marginBottom: 20 }}>
+                  <img
+                    src={photoPreview}
+                    alt="Aperçu du signalement"
+                    style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 10 }}
+                  />
+                  <button
+                    onClick={retirerPhoto}
+                    style={{
+                      position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.6)',
+                      border: 'none', borderRadius: 20, color: '#fff', width: 28, height: 28,
+                      fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>NIVEAU DE GRAVITÉ</label>
               <div style={{ display: 'flex', gap: 8, marginTop: 8, marginBottom: 24 }}>
                 {(['FAIBLE', 'MOYEN', 'CRITIQUE'] as NiveauUrgence[]).map((u) => (
@@ -178,9 +255,14 @@ export default function Home() {
 
               <button
                 onClick={handleSubmit}
-                style={{ width: '100%', padding: 16, background: '#25D366', border: 'none', borderRadius: 12, color: '#fff', fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+                disabled={envoiEnCours}
+                style={{
+                  width: '100%', padding: 16, background: '#25D366', border: 'none', borderRadius: 12,
+                  color: '#fff', fontWeight: 800, fontSize: 15, display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: 8, opacity: envoiEnCours ? 0.6 : 1,
+                }}
               >
-                💬 ENVOYER SUR WHATSAPP
+                {envoiEnCours ? 'Envoi en cours...' : '💬 ENVOYER SUR WHATSAPP'}
               </button>
             </div>
           </div>
