@@ -73,7 +73,7 @@ export default function Home() {
     };
     setSignalements([nouveau, ...signalements]);
 
-    const texteMessage = `🚨 NOUVEAU SIGNALEMENT - Yaoundé Propre\n\nQuartier: ${quartier}\nRepère: ${repere || 'Non précisé'}\nGravité: ${urgence}\nDate: ${dateDuJour}`;
+    const texteMessage = `🚨 NOUVEAU SIGNALEMENT - YAOUNDÉ PROPRE 🇨🇲\n• Quartier : ${quartier}\n• Repère : ${repere || 'Non précisé'}\n• Gravité : ${urgence}\n👉 Action requise pour la salubrité publique.`;
 
     setEnvoiEnCours(true);
 
@@ -113,6 +113,12 @@ export default function Home() {
       <header style={{ background: 'linear-gradient(135deg, #059669, #10b981)', padding: '24px 20px', textAlign: 'center' }}>
         <div style={{ fontSize: 32, fontWeight: 800, letterSpacing: 1 }}>🇨🇲 YAOUNDÉ PROPRE</div>
         <div style={{ fontSize: 13, opacity: 0.9, marginTop: 4 }}>Plateforme citoyenne de signalement des dépôts sauvages</div>
+        <div style={{
+          marginTop: 14, display: 'inline-flex', alignItems: 'center', gap: 8,
+          background: 'rgba(0,0,0,0.15)', borderRadius: 20, padding: '6px 14px', fontSize: 12, fontWeight: 700,
+        }}>
+          🎯 Objectif : 100 signalements pour interpeller la mairie — {signalements.length} pour l'instant
+        </div>
       </header>
 
       <nav style={{ display: 'flex', borderBottom: '1px solid #1e293b', overflowX: 'auto' }}>
@@ -192,25 +198,43 @@ export default function Home() {
 
               <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', letterSpacing: 1 }}>PHOTO (OPTIONNEL)</label>
               {!photoPreview ? (
-                <label
-                  htmlFor="photo-input"
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    width: '100%', padding: 16, marginTop: 8, marginBottom: 20,
-                    background: '#334155', border: '2px dashed #475569', borderRadius: 10,
-                    color: '#94a3b8', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                  }}
-                >
-                  📷 Prendre ou choisir une photo
-                  <input
-                    id="photo-input"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handlePhotoChange}
-                    style={{ display: 'none' }}
-                  />
-                </label>
+                <div style={{ display: 'flex', gap: 8, marginTop: 8, marginBottom: 20 }}>
+                  <label
+                    htmlFor="photo-camera"
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: 14, background: '#334155', border: '2px dashed #475569', borderRadius: 10,
+                      color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'center',
+                    }}
+                  >
+                    📷 Prendre une photo
+                    <input
+                      id="photo-camera"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <label
+                    htmlFor="photo-galerie"
+                    style={{
+                      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      padding: 14, background: '#334155', border: '2px dashed #475569', borderRadius: 10,
+                      color: '#94a3b8', fontSize: 12, fontWeight: 600, cursor: 'pointer', textAlign: 'center',
+                    }}
+                  >
+                    🖼️ Depuis la galerie
+                    <input
+                      id="photo-galerie"
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
               ) : (
                 <div style={{ position: 'relative', marginTop: 8, marginBottom: 20 }}>
                   <img
@@ -251,6 +275,16 @@ export default function Home() {
                     ● {u}
                   </button>
                 ))}
+              </div>
+
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8, background: '#0f172a',
+                border: '1px solid #10b98133', borderRadius: 10, padding: '10px 12px', marginBottom: 16,
+              }}>
+                <span style={{ fontSize: 18 }}>🔒</span>
+                <span style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.4 }}>
+                  <strong style={{ color: '#10b981' }}>Signalement 100% Anonyme & Sécurisé.</strong> Vos données personnelles ne sont pas partagées.
+                </span>
               </div>
 
               <button
@@ -376,19 +410,4 @@ export default function Home() {
           <div style={{ textAlign: 'center', fontSize: 12, color: '#64748b', marginBottom: 20 }}>MVP Citoyen Propre — Initiative citoyenne</div>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-            <a href="mailto:yaoundepropre@gmail.com" style={{ color: '#94a3b8', fontSize: 12, textDecoration: 'none', background: '#1e293b', padding: '8px 14px', borderRadius: 20 }}>
-              ✉️ Contact
-            </a>
-            <a href="https://www.facebook.com/share/19DGSnnDUo/" style={{ color: '#94a3b8', fontSize: 12, textDecoration: 'none', background: '#1e293b', padding: '8px 14px', borderRadius: 20 }}>
-              📘 Facebook
-            </a>
-          </div>
-
-          <div style={{ textAlign: 'center', fontSize: 10, color: '#475569' }}>
-            © 2026 Yaoundé Propre — Fait avec 💚 pour une ville plus propre
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-}
+            <a href="mailto:yaoundepropre@gmail.com" style={{ color: '#94a3b8', fontSize: 12, textDecoration: 'none', background: '#1e293b', padding: '8
